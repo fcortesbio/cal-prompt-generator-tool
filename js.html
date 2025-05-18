@@ -1,12 +1,16 @@
 <script>
   // Global variables
-  let currentUser = null;
-  let navigationData = null;
-  let currentPromptId = null;
-  let currentTemplate = null;
-  let config = null;
+  let currentUser = null;   // The currently logged-in user object. 
+  let navigationData = null; // Data structure for building the navigation sidebar.
+  let currentPromptId = null;   // The ID of the currently loaded prompt template.
+  let currentTemplate = null; // The currently loaded template object in the editor.
+  let config = null; // Configuration data from the Apps Script backend.
   
   // DOM Ready
+  /**
+   * Executes when the DOM is fully loaded.
+   * Initializes the application by fetching configuration.
+   */
   document.addEventListener('DOMContentLoaded', function() {
     // Get configuration
     google.script.run
@@ -18,6 +22,10 @@
   });
   
   // Initialize the application
+  /**
+   * Initializes the application by checking for a stored user session.
+   * Shows the dashboard if a session exists, otherwise sets up login handlers.
+   */
   function initApp() {
     // Check for stored session
     const storedUser = sessionStorage.getItem('calPromptUser');
@@ -30,6 +38,9 @@
   }
   
   // Setup login form handlers
+  /**
+   * Sets up event listeners for the login form elements.
+   */
   function setupLoginHandlers() {
     const eidInput = document.getElementById('eid-input');
     const loginButton = document.getElementById('login-button');
@@ -100,6 +111,10 @@
   }
   
   // Show dashboard
+  /**
+   * Hides the login section and displays the dashboard.
+   * Populates user information and loads navigation data.
+   */
   function showDashboard() {
     document.getElementById('login-section').classList.add('hidden');
     document.getElementById('dashboard').classList.remove('hidden');
@@ -118,6 +133,9 @@
   }
   
   // Load navigation data
+  /**
+   * Fetches navigation data from the Apps Script backend and renders the navigation sidebar.
+   */
   function loadNavigationData() {
     google.script.run
       .withSuccessHandler(function(result) {
@@ -128,6 +146,9 @@
   }
   
   // Render navigation sidebar
+  /**
+   * Renders the navigation sidebar based on the fetched navigation data.
+   */
   function renderNavigation() {
     const navBar = document.getElementById('navigation-bar');
     navBar.innerHTML = '';
@@ -187,6 +208,9 @@
   }
   
   // Setup dashboard event handlers
+  /**
+   * Sets up event listeners for buttons and elements within the dashboard.
+   */
   function setupDashboardHandlers() {
     // Home button
     document.getElementById('home').addEventListener('click', function() {
@@ -251,18 +275,30 @@
   }
   
   // Show welcome message
+  /**
+   * Hides all other content areas and displays the welcome message.
+   */
   function showWelcomeMessage() {
     hideAllContentAreas();
     document.getElementById('welcome-message').classList.remove('hidden');
   }
   
   // Show about area
+  /**
+   * Hides all other content areas and displays the about section.
+   */
   function showAboutArea() {
     hideAllContentAreas();
     document.getElementById('about-area').classList.remove('hidden');
   }
   
   // Show admin area
+  /**
+   * Hides all other content areas and displays the admin section.
+   * Checks if the current user has admin privileges before showing the area.
+   * Loads pending user requests if the user is an admin.
+   * @returns {void}
+   */
   function showAdminArea() {
     if (currentUser.role !== 'admin') {
       showToast('You do not have permission to access this area.', true);
@@ -277,6 +313,10 @@
   }
   
   // Load pending users
+  /**
+   * Fetches pending user requests from the Apps Script backend.
+   * Renders the list of pending users if the fetch is successful.
+   */
   function loadPendingUsers() {
     google.script.run
       .withSuccessHandler(function(result) {
@@ -290,6 +330,10 @@
   }
   
   // Render pending users
+  /**
+   * Renders the list of pending user requests in a table format.
+   * @param {Array<Object>} pendingUsers - An array of pending user objects.
+   */
   function renderPendingUsers(pendingUsers) {
     const pendingList = document.getElementById('pending-users-list');
     pendingList.innerHTML = '';
@@ -364,6 +408,11 @@
   }
   
   // Process pending user
+  /**
+   * Sends a request to the backend to approve or deny a pending user.
+   * @param {string} userEid - The EID of the user to process.
+   * @param {'approve'|'deny'} action - The action to perform ('approve' or 'deny').
+   */
   function processPendingUser(userEid, action) {
     google.script.run
       .withSuccessHandler(function(result) {
@@ -378,6 +427,11 @@
   }
   
   // Show template editor
+  /**
+   * Shows the template editor area, hiding the template list.
+   * Loads existing template data if a promptId is provided.
+   * @param {string} [promptId] - The ID of the template to edit (optional).
+   */
   function showTemplateEditor(promptId) {
     document.getElementById('template-list').classList.add('hidden');
     document.getElementById('template-editor').classList.remove('hidden');
@@ -419,6 +473,10 @@
   }
   
   // Populate template form
+  /**
+   * Populates the template editor form with data from a template object.
+   * @param {Object} template - The template object to populate the form with.
+   */
   function populateTemplateForm(template) {
     document.getElementById('template-inquiry').value = template.inquiry_reason;
     document.getElementById('template-topic').value = template.topic_name;
@@ -440,6 +498,11 @@
   }
   
   // Populate datalists
+  /**
+   * Populates the context and option datalists for autocomplete in the template editor.
+   * @param {Array<string>} contextKeys - An array of recommended context keys.
+   * @param {Array<string>} optionKeys - An array of recommended option keys.
+   */
   function populateDataLists(contextKeys, optionKeys) {
     const contextDatalist = document.getElementById('context-keys');
     const optionDatalist = document.getElementById('option-keys');
@@ -461,6 +524,9 @@
   }
   
   // Setup template form handlers
+  /**
+   * Sets up event listeners for the template editor form buttons (Cancel, Preview, Save).
+   */
   function setupTemplateFormHandlers() {
     const templateForm = document.getElementById('template-form');
     const cancelButton = document.getElementById('cancel-template');
@@ -528,6 +594,10 @@
   }
   
   // Get template from form
+  /**
+   * Retrieves template data from the template editor form.
+   * @returns {Object} An object representing the template data from the form.
+   */
   function getTemplateFromForm() {
     const template = {
       inquiry_reason: document.getElementById('template-inquiry').value,
@@ -566,6 +636,9 @@
   }
   
   // Setup builder handlers
+  /**
+   * Sets up event listeners for adding rows to the context and options builders.
+   */
   function setupBuilderHandlers() {
     // Add context row
     document.getElementById('add-context-row').addEventListener('click', function() {
@@ -579,6 +652,13 @@
   }
   
   // Add builder row
+  /**
+   * Adds a new row to the context or options builder.
+   * @param {string} builderId - The ID of the builder container ('context-builder' or 'options-builder').
+   * @param {string} [key=''] - The initial key value for the row.
+   * @param {*} [value=''] - The initial value for the row.
+   * @param {string} [type=''] - The type of the input for options rows ('text' or 'number').
+   */ 
   function addBuilderRow(builderId, key = '', value = '', type = '') {
     const builder = document.getElementById(builderId);
     const template = builder.querySelector('.template-row');
@@ -611,6 +691,9 @@
   }
   
   // Clear builders
+  /**
+   * Clears all dynamic rows from the context and options builders.
+   */
   function clearBuilders() {
     // Remove all context rows except template
     const contextRows = document.querySelectorAll('#context-builder .builder-row:not(.template-row)');
@@ -626,6 +709,10 @@
   }
   
   // Load prompt
+  /**
+   * Loads a specific prompt template based on its ID and displays the prompt generation area.
+   * @param {string} promptId - The ID of the prompt template to load.
+   */
   function loadPrompt(promptId) {
     currentPromptId = promptId;
     
@@ -661,6 +748,10 @@
   }
   
   // Generate options form
+  /**
+   * Generates the input form dynamically based on the options defined in the prompt template.
+   * @param {Object} options - An object containing the prompt options.
+   */
   function generateOptionsForm(options) {
     const form = document.getElementById('options-form');
     form.innerHTML = '';
@@ -689,6 +780,9 @@
   }
   
   // Update prompt preview
+  /**
+   * Collects data from the options form and updates the prompt preview by calling the backend.
+   */
   function updatePromptPreview() {
     const formData = {};
     const inputs = document.querySelectorAll('#options-form input');
@@ -712,6 +806,9 @@
   }
   
   // Hide all content areas
+  /**
+   * Hides all major content areas (welcome, prompt, admin, about).
+   */
   function hideAllContentAreas() {
     document.getElementById('welcome-message').classList.add('hidden');
     document.getElementById('prompt-area').classList.add('hidden');
@@ -720,6 +817,11 @@
   }
   
   // Show toast notification
+  /**
+   * Displays a transient toast notification message.
+   * @param {string} message - The message to display in the toast.
+   * @param {boolean} [isError=false] - Whether the toast should be styled as an error message.
+   */
   function showToast(message, isError = false) {
     const toast = document.getElementById('toast');
     toast.textContent = message;
