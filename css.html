@@ -1,8 +1,8 @@
 <style>
   /* Reset and Base Styles */
+  
   * {
     box-sizing: border-box;
-    margin: 0;
     padding: 0;
   }
   
@@ -17,6 +17,8 @@
     margin-bottom: 1rem;
     color: #2c3e50;
   }
+  
+  /* Default Button Styles */
   
   button {
     cursor: pointer;
@@ -38,6 +40,8 @@
     cursor: not-allowed;
   }
   
+  /* Default Input and Select Styles */
+  
   input, select {
     padding: 0.5rem;
     border: 1px solid #ddd;
@@ -47,6 +51,8 @@
   }
   
   .hidden {
+    margin: 0; /* Ensure hidden elements don't add space */
+    border: 0; /* Ensure hidden elements don't add border */
     display: none !important;
   }
   
@@ -68,6 +74,8 @@
     max-width: 400px;
   }
   
+  /* Form Group Styling */
+  
   .form-group {
     margin-bottom: 1rem;
   }
@@ -78,6 +86,8 @@
     font-weight: bold;
   }
   
+  /* Signup Link Styling */
+  
   #signup-link {
     color: #3498db;
     cursor: pointer;
@@ -85,11 +95,15 @@
   }
   
   .button-group {
+    /* Styles for groups of buttons */
     display: flex;
     justify-content: space-between;
     margin-top: 1rem;
   }
   
+  /*----------------------*/
+  /*     Dashboard     */
+  /*----------------------*/
   /* Dashboard */
   #dashboard {
     min-height: 100vh;
@@ -97,12 +111,16 @@
     flex-direction: column;
   }
   
+  /* Header Styling */
+  
   header {
     background-color: #2c3e50;
     color: white;
     padding: 1rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
+  
+  /* Header Content Layout */
   
   .header-content {
     display: flex;
@@ -113,6 +131,8 @@
     width: 100%;
   }
   
+  /* User Options Styling in Header */
+  
   .user-options {
     display: flex;
     align-items: center;
@@ -120,6 +140,8 @@
   }
   
   .icon-button {
+    /* Styling for circular icon buttons */
+    
     width: 30px;
     height: 30px;
     border-radius: 50%;
@@ -130,12 +152,16 @@
     font-weight: bold;
   }
   
+  /* Main Content Area Container */
+  
   main {
     flex: 1;
     padding: 1rem;
   }
   
   .container {
+    /* Main container for sidebar and content */
+    
     display: flex;
     max-width: 1200px;
     margin: 0 auto;
@@ -144,6 +170,8 @@
   }
   
   /* Sidebar Navigation */
+  
+  /* General Sidebar Styling */
   .sidebar {
     width: 250px;
     background-color: white;
@@ -152,6 +180,8 @@
     padding: 1rem;
     overflow-y: auto;
   }
+  
+  /* Navigation Category Styling */
   
   .nav-category {
     margin-bottom: 1rem;
@@ -163,6 +193,8 @@
     cursor: pointer;
   }
   
+  /* Navigation Topic Styling */
+  
   .nav-topic {
     margin-left: 1rem;
     margin-bottom: 0.5rem;
@@ -173,6 +205,8 @@
     margin-bottom: 0.5rem;
     cursor: pointer;
   }
+  
+  /* Navigation Case Styling */
   
   .nav-case {
     margin-left: 1rem;
@@ -190,6 +224,8 @@
   }
   
   /* Content Area */
+  
+  /* Main Content Area Styling */
   .content {
     flex: 1;
     background-color: white;
@@ -199,12 +235,15 @@
     overflow-y: auto;
   }
   
+  /* Welcome Message Styling */
+  
   .welcome-message {
     text-align: center;
     padding: 2rem;
   }
   
   /* Prompt Area */
+  
   #prompt-description {
     margin-bottom: 1rem;
     padding: 1rem;
@@ -213,10 +252,14 @@
   }
   
   .preview-container {
+    /* Container for the prompt preview and copy button */
+    
     margin-top: 2rem;
   }
   
   .prompt-preview {
+    /* Styling for the generated prompt preview area */
+    
     padding: 1rem;
     border: 1px solid #ddd;
     border-radius: 4px;
@@ -228,6 +271,8 @@
   }
   
   /* Admin Area */
+  
+  /* Tab Navigation Styling */
   .tabs {
     display: flex;
     margin-bottom: 1rem;
@@ -235,6 +280,8 @@
   }
   
   .tab-button {
+    /* Styling for individual tab buttons */
+    
     padding: 0.5rem 1rem;
     background-color: transparent;
     color: #333;
@@ -243,6 +290,8 @@
   }
   
   .tab-button.active {
+    /* Styling for the active tab button */
+    
     background-color: #3498db;
     color: white;
   }
@@ -255,6 +304,8 @@
   }
   
   /* Template Editor */
+  
+  /* Styling for rows in the context and options builders */
   .builder-row {
     display: flex;
     gap: 0.5rem;
@@ -262,18 +313,26 @@
   }
   
   .template-row {
+    /* Hidden template row used for cloning */
+    
     display: none;
   }
   
   .key-input {
+    /* Styling for the key input fields in builders */
+    
     flex: 1;
   }
   
   .value-input {
+    /* Styling for the value input fields in builders */
+    
     flex: 2;
   }
   
   .type-select {
+    /* Styling for the type select dropdown */
+    
     width: 100px;
   }
   
@@ -288,6 +347,8 @@
   }
   
   .add-row {
+    /* Styling for the button to add new rows */
+    
     background-color: #2ecc71;
     margin-bottom: 1rem;
   }
@@ -295,6 +356,8 @@
   /* Toast Notification */
   .toast {
     position: fixed;
+    /* Positioning at the bottom right */
+    
     bottom: 20px;
     right: 20px;
     padding: 1rem;
@@ -307,17 +370,23 @@
   }
   
   .toast.error {
+    /* Styling for error toast messages */
+    
     background-color: #e74c3c;
   }
   
   /* Buttons */
+  
   .primary-button {
+    /* Styling for primary action buttons */
     background-color: #3498db;
   }
   
   .secondary-button {
+    /* Styling for secondary action buttons */
     background-color: #95a5a6;
   }
+  /* Add more button styles as needed */
   
   /* Responsive Design */
   @media (max-width: 768px) {
