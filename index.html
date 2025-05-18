@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Cal Prompt Generator</title>
+    <?!= include('css'); ?>
+  </head>
+  <body>
+    <!-- Login Section -->
+    <div id="login-section">
+      <div id="login-container">
+        <h1>Cal Prompt Generator</h1>
+        <form id="login-form">
+          <div class="form-group">
+            <label for="eid-input">Employee ID (EID)</label>
+            <input type="number" id="eid-input" placeholder="Enter your 7-digit EID" required>
+          </div>
+          <button type="submit" id="login-button" disabled>Login</button>
+        </form>
+        <p id="eid-alert" class="hidden">EID not found. <span id="signup-link">Click here to sign up!</span></p>
+        
+        <!-- Sign Up Form -->
+        <div id="sign-up-form" class="hidden">
+          <h2>Sign Up Request</h2>
+          <form id="signup-form">
+            <div class="form-group">
+              <label for="signup-eid">Employee ID (EID)</label>
+              <input type="number" id="signup-eid" required>
+            </div>
+            <div class="form-group">
+              <label for="signup-firstname">First Name</label>
+              <input type="text" id="signup-firstname" required>
+            </div>
+            <div class="form-group">
+              <label for="signup-lastname">Last Name</label>
+              <input type="text" id="signup-lastname" required>
+            </div>
+            <div class="form-group">
+              <label for="signup-email">Email</label>
+              <input type="email" id="signup-email" required>
+            </div>
+            <div class="button-group">
+              <button type="button" id="cancel-signup">Cancel</button>
+              <button type="submit" id="submit-signup">Submit</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Dashboard -->
+    <div id="dashboard" class="hidden">
+      <header>
+        <div class="header-content">
+          <h1 id="home">Prompt Generator</h1>
+          <div class="user-options">
+            <span id="greet">Hello, <span id="user-name"></span></span>
+            <button id="about-button" class="icon-button" title="About">?</button>
+            <button id="add-button" class="icon-button hidden" title="Admin Panel">+</button>
+            <button id="logout-button" class="icon-button" title="Logout">x</button>
+          </div>
+        </div>
+      </header>
+      
+      <main>
+        <div class="container">
+          <!-- Navigation Sidebar -->
+          <div class="sidebar" id="navigation-bar">
+            <!-- Will be populated dynamically -->
+          </div>
+          
+          <!-- Main Content Area -->
+          <div class="content" id="main-board">
+            <!-- Welcome Message -->
+            <div id="welcome-message" class="welcome-message">
+              <h2>Welcome to the Cal Prompt Generator</h2>
+              <p>Select a case from the sidebar to generate a prompt.</p>
+            </div>
+            
+            <!-- Prompt Area -->
+            <div id="prompt-area" class="hidden">
+              <h2 id="prompt-title">Generate Prompt</h2>
+              <div id="prompt-description"></div>
+              
+              <form id="options-form">
+                <!-- Will be populated dynamically -->
+              </form>
+              
+              <div class="preview-container">
+                <h3>Prompt Preview</h3>
+                <div id="prompt-preview" class="prompt-preview"></div>
+                <button id="copy-prompt" class="primary-button">Copy Prompt</button>
+              </div>
+            </div>
+            
+            <!-- Admin CRUD Area -->
+            <div id="crud-area" class="hidden">
+              <div class="tabs">
+                <button class="tab-button active" data-tab="template-tab">Templates</button>
+                <button class="tab-button" data-tab="user-tab">Users</button>
+              </div>
+              
+              <div id="template-tab" class="tab-content">
+                <div class="tab-header">
+                  <h2>Manage Templates</h2>
+                  <button id="new-template-button" class="primary-button">New Template</button>
+                </div>
+                
+                <div id="template-list">
+                  <!-- Will be populated dynamically -->
+                </div>
+                
+                <div id="template-editor" class="hidden">
+                  <h3 id="editor-title">New Template</h3>
+                  <form id="template-form">
+                    <div class="form-group">
+                      <label for="template-inquiry">Inquiry Reason</label>
+                      <input type="text" id="template-inquiry" required>
+                    </div>
+                    <div class="form-group">
+                      <label for="template-topic">Topic Name</label>
+                      <input type="text" id="template-topic" required>
+                    </div>
+                    <div class="form-group">
+                      <label for="template-case">Case Name</label>
+                      <input type="text" id="template-case" required>
+                    </div>
+                    <div class="form-group">
+                      <label for="template-backend">Backend Log (Optional)</label>
+                      <input type="text" id="template-backend">
+                    </div>
+                    <div class="form-group">
+                      <label for="template-subject">Email Subject (Optional)</label>
+                      <input type="text" id="template-subject">
+                    </div>
+                    
+                    <h4>Context Builder</h4>
+                    <div id="context-builder">
+                      <div class="builder-row template-row">
+                        <input type="text" class="key-input" placeholder="Key" list="context-keys">
+                        <input type="text" class="value-input" placeholder="Value">
+                        <button type="button" class="remove-row">-</button>
+                      </div>
+                      <button type="button" id="add-context-row" class="add-row">+ Add Context Field</button>
+                    </div>
+                    
+                    <h4>Options Builder</h4>
+                    <div id="options-builder">
+                      <div class="builder-row template-row">
+                        <input type="text" class="key-input" placeholder="Key" list="option-keys">
+                        <input type="text" class="value-input" placeholder="Default Value">
+                        <select class="type-select">
+                          <option value="text">Text</option>
+                          <option value="number">Number</option>
+                        </select>
+                        <button type="button" class="remove-row">-</button>
+                      </div>
+                      <button type="button" id="add-option-row" class="add-row">+ Add Option Field</button>
+                    </div>
+                    
+                    <div class="button-group">
+                      <button type="button" id="cancel-template" class="secondary-button">Cancel</button>
+                      <button type="button" id="preview-template" class="secondary-button">Preview</button>
+                      <button type="submit" id="save-template" class="primary-button">Save Template</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+              
+              <div id="user-tab" class="tab-content hidden">
+                <h2>Pending User Requests</h2>
+                <div id="pending-users-list">
+                  <!-- Will be populated dynamically -->
+                </div>
+              </div>
+            </div>
+            
+            <!-- About Area -->
+            <div id="about-area" class="hidden">
+              <h2>About Cal Prompt Generator</h2>
+              <p>The Cal Prompt Generator is a tool designed to help support agents create structured, context-rich prompts for Cal, our AI assistant.</p>
+              <p>Version: 1.0</p>
+              <p>Created by: <?= OWNER_NAME ?></p>
+              <p>Contact: <?= OWNER_EMAIL ?></p>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+    
+    <!-- Datalists for autocomplete -->
+    <datalist id="context-keys">
+      <!-- Will be populated dynamically -->
+    </datalist>
+    <datalist id="option-keys">
+      <!-- Will be populated dynamically -->
+    </datalist>
+    
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden"></div>
+    
+    <?!= include('js'); ?>
+  </body>
+</html>

@@ -1,0 +1,738 @@
+<script>
+  // Global variables
+  let currentUser = null;
+  let navigationData = null;
+  let currentPromptId = null;
+  let currentTemplate = null;
+  let config = null;
+  
+  // DOM Ready
+  document.addEventListener('DOMContentLoaded', function() {
+    // Get configuration
+    google.script.run
+      .withSuccessHandler(function(result) {
+        config = result;
+        initApp();
+      })
+      .getConfig();
+  });
+  
+  // Initialize the application
+  function initApp() {
+    // Check for stored session
+    const storedUser = sessionStorage.getItem('calPromptUser');
+    if (storedUser) {
+      currentUser = JSON.parse(storedUser);
+      showDashboard();
+    } else {
+      setupLoginHandlers();
+    }
+  }
+  
+  // Setup login form handlers
+  function setupLoginHandlers() {
+    const eidInput = document.getElementById('eid-input');
+    const loginButton = document.getElementById('login-button');
+    const loginForm = document.getElementById('login-form');
+    const signupLink = document.getElementById('signup-link');
+    const signupForm = document.getElementById('signup-form');
+    const cancelSignup = document.getElementById('cancel-signup');
+    
+    // Enable login button when EID has correct length
+    eidInput.addEventListener('input', function() {
+      loginButton.disabled = this.value.length !== config.EID_LENGTH;
+      document.getElementById('eid-alert').classList.add('hidden');
+    });
+    
+    // Handle login form submission
+    loginForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const eid = eidInput.value;
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.success) {
+            currentUser = result.user;
+            sessionStorage.setItem('calPromptUser', JSON.stringify(currentUser));
+            showDashboard();
+          } else {
+            document.getElementById('eid-alert').classList.remove('hidden');
+          }
+        })
+        .validateLogin(eid);
+    });
+    
+    // Show signup form
+    signupLink.addEventListener('click', function() {
+      document.getElementById('login-form').classList.add('hidden');
+      document.getElementById('eid-alert').classList.add('hidden');
+      document.getElementById('sign-up-form').classList.remove('hidden');
+      document.getElementById('signup-eid').value = eidInput.value;
+    });
+    
+    // Cancel signup
+    cancelSignup.addEventListener('click', function() {
+      document.getElementById('sign-up-form').classList.add('hidden');
+      document.getElementById('login-form').classList.remove('hidden');
+    });
+    
+    // Handle signup form submission
+    signupForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const eid = document.getElementById('signup-eid').value;
+      const firstName = document.getElementById('signup-firstname').value;
+      const lastName = document.getElementById('signup-lastname').value;
+      const email = document.getElementById('signup-email').value;
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.success) {
+            showToast(result.message);
+            document.getElementById('sign-up-form').classList.add('hidden');
+            document.getElementById('login-form').classList.remove('hidden');
+          } else {
+            showToast(result.message, true);
+          }
+        })
+        .submitSignupRequest(eid, firstName, lastName, email);
+    });
+  }
+  
+  // Show dashboard
+  function showDashboard() {
+    document.getElementById('login-section').classList.add('hidden');
+    document.getElementById('dashboard').classList.remove('hidden');
+    document.getElementById('user-name').textContent = currentUser.first_name;
+    
+    // Show admin button if user is admin
+    if (currentUser.role === 'admin') {
+      document.getElementById('add-button').classList.remove('hidden');
+    }
+    
+    // Load navigation data
+    loadNavigationData();
+    
+    // Setup dashboard event handlers
+    setupDashboardHandlers();
+  }
+  
+  // Load navigation data
+  function loadNavigationData() {
+    google.script.run
+      .withSuccessHandler(function(result) {
+        navigationData = result;
+        renderNavigation();
+      })
+      .getNavigationData();
+  }
+  
+  // Render navigation sidebar
+  function renderNavigation() {
+    const navBar = document.getElementById('navigation-bar');
+    navBar.innerHTML = '';
+    
+    navigationData.forEach(function(category) {
+      const categoryDiv = document.createElement('div');
+      categoryDiv.className = 'nav-category';
+      
+      const categoryTitle = document.createElement('div');
+      categoryTitle.className = 'nav-category-title';
+      categoryTitle.textContent = category.name;
+      categoryTitle.addEventListener('click', function() {
+        this.nextElementSibling.classList.toggle('hidden');
+      });
+      
+      const topicsDiv = document.createElement('div');
+      
+      category.topics.forEach(function(topic) {
+        const topicDiv = document.createElement('div');
+        topicDiv.className = 'nav-topic';
+        
+        const topicTitle = document.createElement('div');
+        topicTitle.className = 'nav-topic-title';
+        topicTitle.textContent = topic.name;
+        topicTitle.addEventListener('click', function() {
+          this.nextElementSibling.classList.toggle('hidden');
+        });
+        
+        const casesDiv = document.createElement('div');
+        
+        topic.cases.forEach(function(caseItem) {
+          const caseDiv = document.createElement('div');
+          caseDiv.className = 'nav-case';
+          
+          const caseLink = document.createElement('a');
+          caseLink.textContent = caseItem.case_name;
+          caseLink.href = '#';
+          caseLink.dataset.promptId = caseItem.prompt_id;
+          caseLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            loadPrompt(caseItem.prompt_id);
+          });
+          
+          caseDiv.appendChild(caseLink);
+          casesDiv.appendChild(caseDiv);
+        });
+        
+        topicDiv.appendChild(topicTitle);
+        topicDiv.appendChild(casesDiv);
+        topicsDiv.appendChild(topicDiv);
+      });
+      
+      categoryDiv.appendChild(categoryTitle);
+      categoryDiv.appendChild(topicsDiv);
+      navBar.appendChild(categoryDiv);
+    });
+  }
+  
+  // Setup dashboard event handlers
+  function setupDashboardHandlers() {
+    // Home button
+    document.getElementById('home').addEventListener('click', function() {
+      showWelcomeMessage();
+    });
+    
+    // About button
+    document.getElementById('about-button').addEventListener('click', function() {
+      showAboutArea();
+    });
+    
+    // Admin button
+    document.getElementById('add-button').addEventListener('click', function() {
+      showAdminArea();
+    });
+    
+    // Logout button
+    document.getElementById('logout-button').addEventListener('click', function() {
+      sessionStorage.removeItem('calPromptUser');
+      currentUser = null;
+      document.getElementById('dashboard').classList.add('hidden');
+      document.getElementById('login-section').classList.remove('hidden');
+      document.getElementById('eid-input').value = '';
+    });
+    
+    // Copy prompt button
+    document.getElementById('copy-prompt').addEventListener('click', function() {
+      const promptText = document.getElementById('prompt-preview').textContent;
+      navigator.clipboard.writeText(promptText).then(function() {
+        showToast('Prompt copied to clipboard!');
+      });
+    });
+    
+    // Tab buttons
+    const tabButtons = document.querySelectorAll('.tab-button');
+    tabButtons.forEach(function(button) {
+      button.addEventListener('click', function() {
+        const tabId = this.dataset.tab;
+        
+        // Update active tab button
+        tabButtons.forEach(tab => tab.classList.remove('active'));
+        this.classList.add('active');
+        
+        // Show selected tab content
+        document.querySelectorAll('.tab-content').forEach(function(content) {
+          content.classList.add('hidden');
+        });
+        document.getElementById(tabId).classList.remove('hidden');
+      });
+    });
+    
+    // New template button
+    document.getElementById('new-template-button').addEventListener('click', function() {
+      showTemplateEditor();
+    });
+    
+    // Template form handlers
+    setupTemplateFormHandlers();
+    
+    // Context and options builders
+    setupBuilderHandlers();
+  }
+  
+  // Show welcome message
+  function showWelcomeMessage() {
+    hideAllContentAreas();
+    document.getElementById('welcome-message').classList.remove('hidden');
+  }
+  
+  // Show about area
+  function showAboutArea() {
+    hideAllContentAreas();
+    document.getElementById('about-area').classList.remove('hidden');
+  }
+  
+  // Show admin area
+  function showAdminArea() {
+    if (currentUser.role !== 'admin') {
+      showToast('You do not have permission to access this area.', true);
+      return;
+    }
+    
+    hideAllContentAreas();
+    document.getElementById('crud-area').classList.remove('hidden');
+    
+    // Load pending users
+    loadPendingUsers();
+  }
+  
+  // Load pending users
+  function loadPendingUsers() {
+    google.script.run
+      .withSuccessHandler(function(result) {
+        if (result.success) {
+          renderPendingUsers(result.pendingUsers);
+        } else {
+          showToast(result.message, true);
+        }
+      })
+      .getPendingRequests(currentUser.eid);
+  }
+  
+  // Render pending users
+  function renderPendingUsers(pendingUsers) {
+    const pendingList = document.getElementById('pending-users-list');
+    pendingList.innerHTML = '';
+    
+    if (pendingUsers.length === 0) {
+      pendingList.innerHTML = '<p>No pending user requests.</p>';
+      return;
+    }
+    
+    const table = document.createElement('table');
+    table.className = 'data-table';
+    
+    // Create header
+    const thead = document.createElement('thead');
+    const headerRow = document.createElement('tr');
+    ['EID', 'Name', 'Email', 'Status', 'Actions'].forEach(function(header) {
+      const th = document.createElement('th');
+      th.textContent = header;
+      headerRow.appendChild(th);
+    });
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
+    
+    // Create body
+    const tbody = document.createElement('tbody');
+    pendingUsers.forEach(function(user) {
+      if (user.status === 'pending') {
+        const row = document.createElement('tr');
+        
+        const eidCell = document.createElement('td');
+        eidCell.textContent = user.eid;
+        
+        const nameCell = document.createElement('td');
+        nameCell.textContent = user.firstName + ' ' + user.lastName;
+        
+        const emailCell = document.createElement('td');
+        emailCell.textContent = user.email;
+        
+        const statusCell = document.createElement('td');
+        statusCell.textContent = user.status;
+        
+        const actionsCell = document.createElement('td');
+        const approveButton = document.createElement('button');
+        approveButton.textContent = 'Approve';
+        approveButton.className = 'primary-button';
+        approveButton.addEventListener('click', function() {
+          processPendingUser(user.eid, 'approve');
+        });
+        
+        const denyButton = document.createElement('button');
+        denyButton.textContent = 'Deny';
+        denyButton.className = 'secondary-button';
+        denyButton.addEventListener('click', function() {
+          processPendingUser(user.eid, 'deny');
+        });
+        
+        actionsCell.appendChild(approveButton);
+        actionsCell.appendChild(denyButton);
+        
+        row.appendChild(eidCell);
+        row.appendChild(nameCell);
+        row.appendChild(emailCell);
+        row.appendChild(statusCell);
+        row.appendChild(actionsCell);
+        
+        tbody.appendChild(row);
+      }
+    });
+    
+    table.appendChild(tbody);
+    pendingList.appendChild(table);
+  }
+  
+  // Process pending user
+  function processPendingUser(userEid, action) {
+    google.script.run
+      .withSuccessHandler(function(result) {
+        if (result.success) {
+          showToast(result.message);
+          loadPendingUsers();
+        } else {
+          showToast(result.message, true);
+        }
+      })
+      .processPendingUser(currentUser.eid, userEid, action);
+  }
+  
+  // Show template editor
+  function showTemplateEditor(promptId) {
+    document.getElementById('template-list').classList.add('hidden');
+    document.getElementById('template-editor').classList.remove('hidden');
+    
+    // Clear form
+    document.getElementById('template-form').reset();
+    
+    // Clear builders
+    clearBuilders();
+    
+    if (promptId) {
+      document.getElementById('editor-title').textContent = 'Edit Template';
+      
+      // Load template data
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.success) {
+            currentTemplate = result.template;
+            populateTemplateForm(result.template);
+            populateDataLists(result.contextKeys, result.optionKeys);
+          } else {
+            showToast(result.message, true);
+          }
+        })
+        .getTemplateEditorData(currentUser.eid, promptId);
+    } else {
+      document.getElementById('editor-title').textContent = 'New Template';
+      currentTemplate = null;
+      
+      // Load recommended keys
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.success) {
+            populateDataLists(result.contextKeys, result.optionKeys);
+          }
+        })
+        .getTemplateEditorData(currentUser.eid);
+    }
+  }
+  
+  // Populate template form
+  function populateTemplateForm(template) {
+    document.getElementById('template-inquiry').value = template.inquiry_reason;
+    document.getElementById('template-topic').value = template.topic_name;
+    document.getElementById('template-case').value = template.case_name;
+    document.getElementById('template-backend').value = template.backend_log || '';
+    document.getElementById('template-subject').value = template.email_subject || '';
+    
+    // Populate context builder
+    for (const key in template.context) {
+      addBuilderRow('context-builder', key, template.context[key]);
+    }
+    
+    // Populate options builder
+    for (const key in template.options) {
+      const value = template.options[key];
+      const type = typeof value === 'number' ? 'number' : 'text';
+      addBuilderRow('options-builder', key, value, type);
+    }
+  }
+  
+  // Populate datalists
+  function populateDataLists(contextKeys, optionKeys) {
+    const contextDatalist = document.getElementById('context-keys');
+    const optionDatalist = document.getElementById('option-keys');
+    
+    contextDatalist.innerHTML = '';
+    optionDatalist.innerHTML = '';
+    
+    contextKeys.forEach(function(key) {
+      const option = document.createElement('option');
+      option.value = key;
+      contextDatalist.appendChild(option);
+    });
+    
+    optionKeys.forEach(function(key) {
+      const option = document.createElement('option');
+      option.value = key;
+      optionDatalist.appendChild(option);
+    });
+  }
+  
+  // Setup template form handlers
+  function setupTemplateFormHandlers() {
+    const templateForm = document.getElementById('template-form');
+    const cancelButton = document.getElementById('cancel-template');
+    const previewButton = document.getElementById('preview-template');
+    
+    // Cancel button
+    cancelButton.addEventListener('click', function() {
+      document.getElementById('template-editor').classList.add('hidden');
+      document.getElementById('template-list').classList.remove('hidden');
+    });
+    
+    // Preview button
+    previewButton.addEventListener('click', function() {
+      const template = getTemplateFromForm();
+      
+      // Create a mock prompt object
+      const promptObject = {
+        agent_details: {
+          agent_name: "Preview",
+          agent_team: "Customer Solutions Tech Team"
+        },
+        context: template.context,
+        options: template.options
+      };
+      
+      // Generate preview
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.success) {
+            // Show preview in a modal or alert
+            alert(result.promptText);
+          } else {
+            showToast(result.message, true);
+          }
+        })
+        .generatePromptText(promptObject);
+    });
+    
+    // Save button
+    templateForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const template = getTemplateFromForm();
+      
+      // Add prompt_id if editing
+      if (currentTemplate) {
+        template.prompt_id = currentTemplate.prompt_id;
+      }
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.success) {
+            showToast(result.message);
+            document.getElementById('template-editor').classList.add('hidden');
+            document.getElementById('template-list').classList.remove('hidden');
+            
+            // Reload navigation data
+            loadNavigationData();
+          } else {
+            showToast(result.message, true);
+          }
+        })
+        .saveTemplate(currentUser.eid, template);
+    });
+  }
+  
+  // Get template from form
+  function getTemplateFromForm() {
+    const template = {
+      inquiry_reason: document.getElementById('template-inquiry').value,
+      topic_name: document.getElementById('template-topic').value,
+      case_name: document.getElementById('template-case').value,
+      backend_log: document.getElementById('template-backend').value,
+      email_subject: document.getElementById('template-subject').value,
+      context: {},
+      options: {}
+    };
+    
+    // Get context fields
+    const contextRows = document.querySelectorAll('#context-builder .builder-row:not(.template-row)');
+    contextRows.forEach(function(row) {
+      const key = row.querySelector('.key-input').value;
+      const value = row.querySelector('.value-input').value;
+      
+      if (key && value) {
+        template.context[key] = value;
+      }
+    });
+    
+    // Get options fields
+    const optionRows = document.querySelectorAll('#options-builder .builder-row:not(.template-row)');
+    optionRows.forEach(function(row) {
+      const key = row.querySelector('.key-input').value;
+      const value = row.querySelector('.value-input').value;
+      const type = row.querySelector('.type-select').value;
+      
+      if (key && value) {
+        template.options[key] = type === 'number' ? Number(value) : value;
+      }
+    });
+    
+    return template;
+  }
+  
+  // Setup builder handlers
+  function setupBuilderHandlers() {
+    // Add context row
+    document.getElementById('add-context-row').addEventListener('click', function() {
+      addBuilderRow('context-builder');
+    });
+    
+    // Add option row
+    document.getElementById('add-option-row').addEventListener('click', function() {
+      addBuilderRow('options-builder', '', '', 'text');
+    });
+  }
+  
+  // Add builder row
+  function addBuilderRow(builderId, key = '', value = '', type = '') {
+    const builder = document.getElementById(builderId);
+    const template = builder.querySelector('.template-row');
+    const newRow = template.cloneNode(true);
+    
+    newRow.classList.remove('template-row');
+    newRow.style.display = 'flex';
+    
+    // Set values if provided
+    if (key) {
+      newRow.querySelector('.key-input').value = key;
+    }
+    
+    if (value !== undefined) {
+      newRow.querySelector('.value-input').value = value;
+    }
+    
+    // Set type if it's an options row
+    if (builderId === 'options-builder' && type) {
+      newRow.querySelector('.type-select').value = type;
+    }
+    
+    // Add remove button handler
+    newRow.querySelector('.remove-row').addEventListener('click', function() {
+      builder.removeChild(newRow);
+    });
+    
+    // Insert before the add button
+    builder.insertBefore(newRow, builder.lastElementChild);
+  }
+  
+  // Clear builders
+  function clearBuilders() {
+    // Remove all context rows except template
+    const contextRows = document.querySelectorAll('#context-builder .builder-row:not(.template-row)');
+    contextRows.forEach(function(row) {
+      row.parentNode.removeChild(row);
+    });
+    
+    // Remove all option rows except template
+    const optionRows = document.querySelectorAll('#options-builder .builder-row:not(.template-row)');
+    optionRows.forEach(function(row) {
+      row.parentNode.removeChild(row);
+    });
+  }
+  
+  // Load prompt
+  function loadPrompt(promptId) {
+    currentPromptId = promptId;
+    
+    google.script.run
+      .withSuccessHandler(function(result) {
+        if (result.success) {
+          hideAllContentAreas();
+          document.getElementById('prompt-area').classList.remove('hidden');
+          
+          // Set prompt title and description
+          document.getElementById('prompt-title').textContent = result.template.case_name;
+          
+          let description = '';
+          if (result.template.backend_log) {
+            description += '<strong>Backend Log:</strong> ' + result.template.backend_log + '<br>';
+          }
+          if (result.template.email_subject) {
+            description += '<strong>Email Subject:</strong> ' + result.template.email_subject;
+          }
+          
+          document.getElementById('prompt-description').innerHTML = description;
+          
+          // Generate options form
+          generateOptionsForm(result.template.options);
+          
+          // Generate initial preview
+          updatePromptPreview();
+        } else {
+          showToast(result.message, true);
+        }
+      })
+      .getPromptById(promptId);
+  }
+  
+  // Generate options form
+  function generateOptionsForm(options) {
+    const form = document.getElementById('options-form');
+    form.innerHTML = '';
+    
+    for (const key in options) {
+      const formGroup = document.createElement('div');
+      formGroup.className = 'form-group';
+      
+      const label = document.createElement('label');
+      label.setAttribute('for', 'option-' + key);
+      label.textContent = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+      
+      const input = document.createElement('input');
+      input.id = 'option-' + key;
+      input.name = key;
+      input.value = options[key];
+      input.type = typeof options[key] === 'number' ? 'number' : 'text';
+      
+      // Add event listener for live preview
+      input.addEventListener('input', updatePromptPreview);
+      
+      formGroup.appendChild(label);
+      formGroup.appendChild(input);
+      form.appendChild(formGroup);
+    }
+  }
+  
+  // Update prompt preview
+  function updatePromptPreview() {
+    const formData = {};
+    const inputs = document.querySelectorAll('#options-form input');
+    
+    inputs.forEach(function(input) {
+      formData[input.name] = input.type === 'number' ? Number(input.value) : input.value;
+    });
+    
+    google.script.run
+      .withSuccessHandler(function(result) {
+        if (result.success) {
+          document.getElementById('prompt-preview').textContent = result.promptText;
+        } else {
+          showToast(result.message, true);
+        }
+      })
+      .generatePromptObject(currentPromptId, {
+        name: currentUser.agent_name || currentUser.first_name,
+        division: currentUser.division
+      }, formData);
+  }
+  
+  // Hide all content areas
+  function hideAllContentAreas() {
+    document.getElementById('welcome-message').classList.add('hidden');
+    document.getElementById('prompt-area').classList.add('hidden');
+    document.getElementById('crud-area').classList.add('hidden');
+    document.getElementById('about-area').classList.add('hidden');
+  }
+  
+  // Show toast notification
+  function showToast(message, isError = false) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.classList.remove('hidden');
+    
+    if (isError) {
+      toast.classList.add('error');
+    } else {
+      toast.classList.remove('error');
+    }
+    
+    setTimeout(function() {
+      toast.classList.add('hidden');
+    }, 3000);
+  }
+</script>
