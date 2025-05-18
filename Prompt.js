@@ -1,4 +1,10 @@
 // Get navigation data (categories, topics, cases)
+/**
+ * Retrieves structured navigation data containing prompt categories, topics, and cases.
+ * This data is used to build the navigation sidebar in the UI.
+ *
+ * @returns {Array<Object>} An array of objects, where each object represents a category and contains its name and an array of topics. Each topic object contains its name and an array of cases.
+ */
 function getNavigationData() {
   const categories = getPromptCategories();
   const navigation = [];
@@ -25,6 +31,13 @@ function getNavigationData() {
 }
 
 // Generate prompt object
+/**
+ * Generates a prompt object based on a prompt template, agent data, and form data.
+ *
+ * @param {string} promptId - The ID of the prompt template.
+ * @param {Object} agentData - The data of the agent generating the prompt (e.g., name).
+ * @param {Object} formData - The data submitted from the prompt options form.
+ */
 function generatePromptObject(promptId, agentData, formData) {
   const promptTemplate = getPromptById(promptId);
   
@@ -75,6 +88,12 @@ function generatePromptObject(promptId, agentData, formData) {
 }
 
 // Generate the full prompt text
+/**
+ * Generates the full prompt text based on the provided prompt object.
+ *
+ * @param {Object} promptObject - The object containing the structured prompt data.
+ * @returns {string} The complete prompt text ready to be used with the AI.
+ */
 function generatePromptText(promptObject) {
   const template = `You are a support assistant at ${COMPANY}. Use the provided JSON to generate a polite, professional, and QA-compliant email response.
 
@@ -93,6 +112,13 @@ ${JSON.stringify(promptObject, null, 2)}`;
 }
 
 // Render Mustache template
+/**
+ * Renders a template string using a simple Mustache-like syntax ({{key}}).
+ *
+ * @param {string} template - The template string with placeholders.
+ * @param {Object} data - The data object to fill the placeholders.
+ * @returns {string} The rendered template string.
+ */
 function renderMustache(template, data) {
   return template.replace(/{{(.*?)}}/g, (_, key) => {
     const value = key.trim().split('.').reduce((obj, prop) => obj?.[prop], data);
@@ -101,6 +127,13 @@ function renderMustache(template, data) {
 }
 
 // Save new template (admin only)
+/**
+ * Saves a new prompt template or updates an existing one (admin only).
+ *
+ * @param {string} adminEid - The EID of the admin user performing the action.
+ * @param {Object} template - The template object to save or update.
+ * @returns {Object} An object indicating success or failure and a message.
+ */
 function saveTemplate(adminEid, template) {
   if (!isAdmin(adminEid)) {
     return { 
@@ -146,6 +179,13 @@ function saveTemplate(adminEid, template) {
 }
 
 // Delete template (admin only)
+/**
+ * Deletes a prompt template by its ID (admin only).
+ *
+ * @param {string} adminEid - The EID of the admin user performing the action.
+ * @param {string} promptId - The ID of the template to delete.
+ * @returns {Object} An object indicating success or failure and a message.
+ */
 function deleteTemplate(adminEid, promptId) {
   if (!isAdmin(adminEid)) {
     return { 
