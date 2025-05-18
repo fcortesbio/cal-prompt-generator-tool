@@ -1,6 +1,11 @@
 // Validate user login
+/**
+ * Validates user login based on EID.
+ * @param {number} eid - The Employee ID.
+ * @return {object} An object indicating success or failure, and user data if successful.
+ */
 function validateLogin(eid) {
-  if (!isValidEidFormat(eid)) {
+ if (!isValidEidFormat(eid)) {
     return { 
       success: false, 
       message: 'Invalid EID format. EID must be ' + EID_LENGTH + ' digits.' 
@@ -32,6 +37,14 @@ function validateLogin(eid) {
 }
 
 // Submit signup request
+/**
+ * Submits a signup request for a new user.
+ * @param {number} eid - The Employee ID.
+ * @param {string} firstName - The user's first name.
+ * @param {string} lastName - The user's last name.
+ * @param {string} email - The user's email address.
+ * @return {object} An object indicating success or failure and a message.
+ */
 function submitSignupRequest(eid, firstName, lastName, email) {
   if (!isValidEidFormat(eid)) {
     return { 
@@ -67,6 +80,11 @@ function submitSignupRequest(eid, firstName, lastName, email) {
 }
 
 // Get pending user requests (admin only)
+/**
+ * Retrieves pending user signup requests. Only accessible by admins.
+ * @param {number} eid - The admin's Employee ID.
+ * @return {object} An object indicating success or failure, and a list of pending users if successful.
+ */
 function getPendingRequests(eid) {
   if (!isAdmin(eid)) {
     return { 
@@ -84,6 +102,13 @@ function getPendingRequests(eid) {
 }
 
 // Approve or deny pending user (admin only)
+/**
+ * Processes a pending user signup request (approves or denies). Only accessible by admins.
+ * @param {number} adminEid - The admin's Employee ID.
+ * @param {number} userEid - The Employee ID of the user request to process.
+ * @param {string} action - The action to perform ('approve' or 'deny').
+ * @return {object} An object indicating success or failure and a message.
+ */
 function processPendingUser(adminEid, userEid, action) {
   if (!isAdmin(adminEid)) {
     return { 
