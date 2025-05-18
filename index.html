@@ -1,14 +1,17 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <!-- Base target for links -->
     <base target="_top">
+    <!-- Character encoding -->
     <meta charset="utf-8">
+    <!-- Responsive viewport setting -->
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Cal Prompt Generator</title>
+    <!-- Include CSS file -->
     <?!= include('css'); ?>
   </head>
   <body>
-    <!-- Login Section -->
     <div id="login-section">
       <div id="login-container">
         <h1>Cal Prompt Generator</h1>
@@ -49,7 +52,7 @@
         </div>
       </div>
     </div>
-    
+
     <!-- Dashboard -->
     <div id="dashboard" class="hidden">
       <header>
@@ -63,10 +66,9 @@
           </div>
         </div>
       </header>
-      
+
       <main>
         <div class="container">
-          <!-- Navigation Sidebar -->
           <div class="sidebar" id="navigation-bar">
             <!-- Will be populated dynamically -->
           </div>
@@ -79,7 +81,6 @@
               <p>Select a case from the sidebar to generate a prompt.</p>
             </div>
             
-            <!-- Prompt Area -->
             <div id="prompt-area" class="hidden">
               <h2 id="prompt-title">Generate Prompt</h2>
               <div id="prompt-description"></div>
@@ -95,7 +96,6 @@
               </div>
             </div>
             
-            <!-- Admin CRUD Area -->
             <div id="crud-area" class="hidden">
               <div class="tabs">
                 <button class="tab-button active" data-tab="template-tab">Templates</button>
@@ -176,7 +176,6 @@
                 </div>
               </div>
             </div>
-            
             <!-- About Area -->
             <div id="about-area" class="hidden">
               <h2>About Cal Prompt Generator</h2>
