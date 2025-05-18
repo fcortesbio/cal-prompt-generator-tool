@@ -1,5 +1,5 @@
-// Get navigation data (categories, topics, cases)
 /**
+ * Get navigation data (categories, topics, cases)
  * Retrieves structured navigation data containing prompt categories, topics, and cases.
  * This data is used to build the navigation sidebar in the UI.
  *
@@ -30,7 +30,6 @@ function getNavigationData() {
   return navigation;
 }
 
-// Generate prompt object
 /**
  * Generates a prompt object based on a prompt template, agent data, and form data.
  *
@@ -87,7 +86,6 @@ function generatePromptObject(promptId, agentData, formData) {
   };
 }
 
-// Generate the full prompt text
 /**
  * Generates the full prompt text based on the provided prompt object.
  *
@@ -111,7 +109,6 @@ ${JSON.stringify(promptObject, null, 2)}`;
   return template;
 }
 
-// Render Mustache template
 /**
  * Renders a template string using a simple Mustache-like syntax ({{key}}).
  *
@@ -126,16 +123,15 @@ function renderMustache(template, data) {
   });
 }
 
-// Save new template (admin only)
 /**
  * Saves a new prompt template or updates an existing one (admin only).
  *
- * @param {string} adminEid - The EID of the admin user performing the action.
+ * @param {string} eid - The EID of the admin user performing the action.
  * @param {Object} template - The template object to save or update.
  * @returns {Object} An object indicating success or failure and a message.
  */
-function saveTemplate(adminEid, template) {
-  if (!isAdmin(adminEid)) {
+function saveTemplate(eid, template) {
+  if (!isAdmin(eid)) {
     return { 
       success: false, 
       message: 'Unauthorized access.' 
@@ -178,16 +174,15 @@ function saveTemplate(adminEid, template) {
   }
 }
 
-// Delete template (admin only)
 /**
  * Deletes a prompt template by its ID (admin only).
  *
- * @param {string} adminEid - The EID of the admin user performing the action.
+ * @param {string} eid - The EID of the admin user performing the action.
  * @param {string} promptId - The ID of the template to delete.
  * @returns {Object} An object indicating success or failure and a message.
  */
-function deleteTemplate(adminEid, promptId) {
-  if (!isAdmin(adminEid)) {
+function deleteTemplate(eid, promptId) {
+  if (!isAdmin(eid)) {
     return { 
       success: false, 
       message: 'Unauthorized access.' 
