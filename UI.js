@@ -5,16 +5,16 @@
  * @returns {string[]} An array of recommended context keys.
  */
 function getRecommendedContextKeys() {
- return [
-    'case_description',
-    'contact_reason',
-    'action_required',
-    'justification',
-    'request_status',
-    'pending_reason',
-    'actions_taken',
-    'recommendations',
-    'empowerment_statement'
+  return [
+    "case_description",
+    "contact_reason",
+    "action_required",
+    "justification",
+    "request_status",
+    "pending_reason",
+    "actions_taken",
+    "recommendations",
+    "empowerment_statement",
   ];
 }
 
@@ -25,11 +25,7 @@ function getRecommendedContextKeys() {
  * @returns {string[]} An array of recommended option keys.
  */
 function getRecommendedOptionKeys() {
-  return [
-    'ticket_number',
-    'user_name',
-    'user_company'
-  ];
+  return ["ticket_number", "user_name", "user_company"];
 }
 
 // Get template editor data
@@ -44,29 +40,29 @@ function getRecommendedOptionKeys() {
  */
 function getTemplateEditorData(adminEid, promptId) {
   if (!isAdmin(adminEid)) {
-    return { 
-      success: false, 
-      message: 'Unauthorized access.' 
+    return {
+      success: false,
+      message: "Unauthorized access.",
     };
   }
-  
+
   let template = null;
-  
+
   if (promptId) {
     template = getPromptById(promptId);
     if (!template) {
-      return { 
-        success: false, 
-        message: 'Template not found.' 
+      return {
+        success: false,
+        message: "Template not found.",
       };
     }
   }
-  
+
   return {
     success: true,
     template: template,
     contextKeys: getRecommendedContextKeys(),
     optionKeys: getRecommendedOptionKeys(),
-    categories: getPromptCategories()
+    categories: getPromptCategories(),
   };
 }

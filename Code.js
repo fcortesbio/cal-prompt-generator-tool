@@ -12,10 +12,10 @@ const EID_LENGTH = 7;
  * @returns {GoogleAppsScript.HTML.HtmlOutput} The HTML output to be served.
  */
 function doGet() {
-  return HtmlService.createTemplateFromFile('index')
+  return HtmlService.createTemplateFromFile("index")
     .evaluate()
-    .setTitle('Cal Prompt Generator')
-    .addMetaTag('viewport', 'width=device-width, initial-scale=1')
+    .setTitle("Cal Prompt Generator")
+    .addMetaTag("viewport", "width=device-width, initial-scale=1")
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL); // Consider if ALLOWALL is the most secure option for your use case.
 }
 
@@ -47,7 +47,7 @@ function getConfig() {
     DOMAIN_NAME: DOMAIN_NAME,
     OWNER_NAME: OWNER_NAME,
     OWNER_EMAIL: OWNER_EMAIL,
-    EID_LENGTH: EID_LENGTH
+    EID_LENGTH: EID_LENGTH,
   };
 }
 
@@ -69,7 +69,7 @@ function generateUniqueId() {
 function isAdmin(eid) {
   // getUserByEid defined at Database.js
   const userData = getUserByEid(eid);
-  return userData && userData.agent_role === 'admin';
+  return userData && userData.agent_role === "admin";
 }
 
 /**
